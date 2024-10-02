@@ -16,10 +16,8 @@ def _get_message(id=None):
         c = conn.cursor()
 
         if id:
-            id = int(id)  # Ensure that we have a valid id value to query
-            q = "SELECT * FROM messages WHERE id=? ORDER BY dt DESC"
-            rows = c.execute(q, (id,))
-
+            q = f"SELECT * FROM messages WHERE id={id} ORDER BY dt DESC"  # Vulnerable to SQL Injection
+            rows = c.execute(q)
         else:
             q = "SELECT * FROM messages ORDER BY dt DESC"
             rows = c.execute(q)
@@ -86,10 +84,12 @@ def admin():
 def login():
     error = None
     if request.method == 'POST':
+        # Hardcoded credentials - vulnerable to exposure
         if request.form['username'] != app.config['USERNAME'] or request.form['password'] != app.config['PASSWORD']:
             error = 'Invalid username and/or password'
         else:
             session['logged_in'] = True
+            # Missing session regeneration - vulnerable to session fixation
             return redirect(url_for('admin'))
     return render_template('login.html', error=error)
 
@@ -128,7 +128,6 @@ def delete_message_by_id(id):
 
 
 if __name__ == '__main__':
-
     # Test whether the database exists; if not, create it and create the table
     if not os.path.exists(app.config['DATABASE']):
         try:
@@ -136,7 +135,7 @@ if __name__ == '__main__':
 
             # Absolute path needed for testing environment
             sql_path = os.path.join(app.config['APP_ROOT'], 'db_init.sql')
-            cmd = open(sql_path, 'r').read()
+            cmd = open(sql_path, 'r').read()  # Vulnerable to path traversal attack
             c = conn.cursor()
             c.execute(cmd)
             conn.commit()
