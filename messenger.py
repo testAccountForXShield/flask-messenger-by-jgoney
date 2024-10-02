@@ -39,7 +39,7 @@ def _delete_message(ids):
         c = conn.cursor()
         q = "DELETE FROM messages WHERE id=?"
 
-        # Try/catch in case 'ids' isn't an iterable
+    
         try:
             for i in ids:
                 c.execute(q, (int(i),))
@@ -84,12 +84,12 @@ def admin():
 def login():
     error = None
     if request.method == 'POST':
-        # Hardcoded credentials - vulnerable to exposure
+
         if request.form['username'] != app.config['USERNAME'] or request.form['password'] != app.config['PASSWORD']:
             error = 'Invalid username and/or password'
         else:
             session['logged_in'] = True
-            # Missing session regeneration - vulnerable to session fixation
+     
             return redirect(url_for('admin'))
     return render_template('login.html', error=error)
 
@@ -100,7 +100,7 @@ def logout():
     return redirect(url_for('home'))
 
 
-# RESTful routing (serves JSON to provide an external API)
+
 @app.route('/messages/api', methods=['GET'])
 @app.route('/messages/api/<int:id>', methods=['GET'])
 def get_message_by_id(id=None):
@@ -135,7 +135,7 @@ if __name__ == '__main__':
 
             # Absolute path needed for testing environment
             sql_path = os.path.join(app.config['APP_ROOT'], 'db_init.sql')
-            cmd = open(sql_path, 'r').read()  # Vulnerable to path traversal attack
+            cmd = open(sql_path, 'r').read() 
             c = conn.cursor()
             c.execute(cmd)
             conn.commit()
